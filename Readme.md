@@ -29,6 +29,16 @@ SMS Dispatcher Service is an Android application designed to handle outgoing SMS
 2. **Database Configuration:**
     - Ensure that the Microsoft SQL Server database is accessible and contains the necessary tables (`OutgoingMessages`).
 
+   ```SQL
+   CREATE TABLE OutgoingMessages (
+    Id INT PRIMARY KEY IDENTITY,
+    AndroidDeviceId VARCHAR(255),
+    Number VARCHAR(255),
+    Message VARCHAR(255),
+    Sent BIT DEFAULT 0
+   );
+   ```
+
 3. **Android ID:**
     - The app retrieves the Android ID of the device to identify it uniquely. Ensure that the Android ID is used correctly for message retrieval.
 
