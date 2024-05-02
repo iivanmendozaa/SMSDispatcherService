@@ -50,6 +50,7 @@ class MainActivity : ComponentActivity() {
 
             val serviceIntent = Intent(this, FetchOutgoingMessagesService::class.java)
             serviceIntent.putExtra("QUERY_INTERVAL_MILLISECONDS", QUERY_INTERVAL_MILLISECONDS)
+            serviceIntent.putExtra("ANDROID_DEVICE_ID", deviceId)
             this.startService(serviceIntent)
 
             showToast("FetchOutgoingMessagesService Service has been launched")

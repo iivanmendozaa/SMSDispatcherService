@@ -38,9 +38,11 @@ class FetchOutgoingMessagesService : Service() {
         val queryIntervalMilliseconds = intent?.getLongExtra("QUERY_INTERVAL_MILLISECONDS", DEFAULT_INTERVAL)
             ?: DEFAULT_INTERVAL // DEFAULT_INTERVAL is a default value if the extra is not provided
 
+        val androidDeviceId = intent?.getStringExtra("ANDROID_DEVICE_ID")
+
         createNotificationChannel()
         startForegroundService()
-        scheduleDatabaseQueryTask(queryIntervalMilliseconds)
+        scheduleDatabaseQueryTask(queryIntervalMilliseconds, androidDeviceId!!)
 
 
         return START_STICKY
@@ -73,11 +75,11 @@ class FetchOutgoingMessagesService : Service() {
             .setSmallIcon(R.drawable.notification_icon)
     }
 
-    private fun scheduleDatabaseQueryTask(queryIntervalMilliseconds: Long) {
+    private fun scheduleDatabaseQueryTask(queryIntervalMilliseconds: Long, deviceId: String) {
         timer.scheduleAtFixedRate(object : TimerTask() {
             @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
             override fun run() {
-                performDatabaseQuery()
+                performDatabaseQuery(deviceId)
             }
         }, 0, queryIntervalMilliseconds) // 5 minutes interval
     }
@@ -85,7 +87,7 @@ class FetchOutgoingMessagesService : Service() {
     @SuppressLint("SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @OptIn(DelicateCoroutinesApi::class)
-    private fun performDatabaseQuery() {
+    private fun performDatabaseQuery(deviceId: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
 
@@ -98,7 +100,7 @@ class FetchOutgoingMessagesService : Service() {
                         val databaseHandler = MSSQLDatabaseHandler(applicationContext)
                         databaseHandler.main()
 
-                        val registers = databaseHandler.retrieveMessagesForAndroidDevice("679f3397506141a8")
+                        val registers = databaseHandler.retrieveMessagesForAndroidDevice(deviceId)
 
                         registers.forEach { message ->
                             smsSender.sendSMS(message.number, message.content)
