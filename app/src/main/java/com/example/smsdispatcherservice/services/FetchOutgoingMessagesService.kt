@@ -1,11 +1,13 @@
 package com.example.smsdispatcherservice.services
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.media.RingtoneManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -23,18 +25,22 @@ import kotlinx.coroutines.withContext
 import java.util.Timer
 import java.util.TimerTask
 
-class FetchOutgoingMessagesService() : Service() {
+class FetchOutgoingMessagesService : Service() {
 
     private val timer = Timer()
     private lateinit var wakeLock: PowerManager.WakeLock
 
+    @SuppressLint("WakelockTimeout")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Acquire the wake lock
         wakeLock.acquire()
 
+        val queryIntervalMilliseconds = intent?.getLongExtra("QUERY_INTERVAL_MILLISECONDS", DEFAULT_INTERVAL)
+            ?: DEFAULT_INTERVAL // DEFAULT_INTERVAL is a default value if the extra is not provided
+
         createNotificationChannel()
         startForegroundService()
-        scheduleDatabaseQueryTask()
+        scheduleDatabaseQueryTask(queryIntervalMilliseconds)
 
 
         return START_STICKY
@@ -63,18 +69,20 @@ class FetchOutgoingMessagesService() : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Foreground Service")
             .setContentText("Service is running")
+            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)) // Play default notification sound
             .setSmallIcon(R.drawable.notification_icon)
     }
 
-    private fun scheduleDatabaseQueryTask() {
+    private fun scheduleDatabaseQueryTask(queryIntervalMilliseconds: Long) {
         timer.scheduleAtFixedRate(object : TimerTask() {
             @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
             override fun run() {
                 performDatabaseQuery()
             }
-        }, 0, QUERY_INTERVAL_MILLISECONDS) // 5 minutes interval
+        }, 0, queryIntervalMilliseconds) // 5 minutes interval
     }
 
+    @SuppressLint("SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @OptIn(DelicateCoroutinesApi::class)
     private fun performDatabaseQuery() {
@@ -151,7 +159,7 @@ class FetchOutgoingMessagesService() : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "FetchOutgoingMessagesChannel"
-        private const val QUERY_INTERVAL_MILLISECONDS = 1 * 60 * 1000L // 5 minutes
-        private const val QUERY_DELAY_MILLISECONDS = 1000L // Delay for testing
+        private const val DEFAULT_INTERVAL = 300000L // 5 minutes
+
     }
 }
