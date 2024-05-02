@@ -1,0 +1,18 @@
+CREATE TABLE OutgoingMessages (
+    Id INT PRIMARY KEY IDENTITY,
+    AndroidDeviceId VARCHAR(255),
+    Number VARCHAR(255),
+    Message VARCHAR(255),
+    Sent BIT DEFAULT 0
+);
+
+
+INSERT INTO OutgoingMessages (AndroidDeviceId, number, message)
+VALUES
+    ('device_id_1', '6562849296', 'Hello, this is message 1'),
+	('device_id_2', '6565507197', 'This is message 2'),
+	('device_id_2', '6562152942', 'This is message 3'),
+	('device_id_2', '6565507197', 'This is message 4'),
+	('device_id_2', '6562152942', 'This is message 5'),
+    ('device_id_2', '6562849296', 'This is message 6'),
+    ('device_id_1', '6562152942', 'Another message for device 1');
