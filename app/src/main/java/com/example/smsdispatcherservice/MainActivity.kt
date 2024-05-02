@@ -2,6 +2,7 @@ package com.example.smsdispatcherservice
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -12,12 +13,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import com.example.smsdispatcherservice.infrastructure.MSSQLDatabaseHandler
-import com.example.smsdispatcherservice.infrastructure.MessageSender
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.smsdispatcherservice.services.FetchOutgoingMessagesService
 
 class MainActivity : ComponentActivity() {
 
@@ -46,34 +42,14 @@ class MainActivity : ComponentActivity() {
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,Array(1){ Manifest.permission.SEND_SMS},101)
         }
+        else{
+            val serviceIntent = Intent(this, FetchOutgoingMessagesService()::class.java)
+            startService(serviceIntent)
 
+            showToast("FetchOutgoingMessagesService Service has been launched")
 
-        GlobalScope.launch(Dispatchers.Main) {
-            try {
-                val smsSender = MessageSender()
-                val data = withContext(Dispatchers.IO) {
-                    val databaseHandler = MSSQLDatabaseHandler(applicationContext)
-                    databaseHandler.main()
-
-                    val registers = databaseHandler.retrieveMessagesForAndroidDevice(deviceId)
-
-                    registers.forEach { message ->
-                        println("Message ID: ${message.id}")
-                        println("Number: ${message.number}")
-                        println("Message: ${message.content}")
-                        println("------------------------")
-                        smsSender.sendSMS(message.number, message.content)
-                        databaseHandler.markMessageAsSent(message.id)
-
-                    }
-
-                }
-
-                // Process retrieved data here
-            } catch (e: Exception) {
-                // Handle exceptions here
-            }
         }
+
 
     }
 
