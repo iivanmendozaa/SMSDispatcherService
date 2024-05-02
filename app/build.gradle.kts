@@ -70,6 +70,6 @@ dependencies {
 
     implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.0.jre11")
     implementation("net.sourceforge.jtds:jtds:1.3.1")
-
+    implementation("com.rabbitmq:amqp-client:5.21.0")
 
 }
