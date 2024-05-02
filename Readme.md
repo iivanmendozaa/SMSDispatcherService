@@ -35,7 +35,10 @@ SMS Dispatcher Service is an Android application designed to handle outgoing SMS
 4. **SMS Sending Limit:**
     - Modify the `SMS_OUTGOING_CHECK_MAX_COUNT` value to a large number in the `settings.db` and `gservices.db` files if necessary. Note that modifying system settings programmatically may require root access and is not recommended.
 
-5. **Build and Run:**
+5. **Time Interval of Execution:**
+    - The app executes the database query task at regular intervals. By default, it retrieves messages every 5 minutes. You can modify this interval in the `QUERY_INTERVAL_MILLISECONDS` at appSettings.json.
+
+6. **Build and Run:**
     - Build the application using Android Studio or your preferred IDE.
     - Run the application on a compatible Android device or emulator.
 

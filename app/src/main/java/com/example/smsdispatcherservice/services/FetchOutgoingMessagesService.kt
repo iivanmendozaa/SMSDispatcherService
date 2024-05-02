@@ -35,9 +35,12 @@ class FetchOutgoingMessagesService : Service() {
         // Acquire the wake lock
         wakeLock.acquire()
 
+        val queryIntervalMilliseconds = intent?.getLongExtra("QUERY_INTERVAL_MILLISECONDS", DEFAULT_INTERVAL)
+            ?: DEFAULT_INTERVAL // DEFAULT_INTERVAL is a default value if the extra is not provided
+
         createNotificationChannel()
         startForegroundService()
-        scheduleDatabaseQueryTask()
+        scheduleDatabaseQueryTask(queryIntervalMilliseconds)
 
 
         return START_STICKY
@@ -70,13 +73,13 @@ class FetchOutgoingMessagesService : Service() {
             .setSmallIcon(R.drawable.notification_icon)
     }
 
-    private fun scheduleDatabaseQueryTask() {
+    private fun scheduleDatabaseQueryTask(queryIntervalMilliseconds: Long) {
         timer.scheduleAtFixedRate(object : TimerTask() {
             @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
             override fun run() {
                 performDatabaseQuery()
             }
-        }, 0, QUERY_INTERVAL_MILLISECONDS) // 5 minutes interval
+        }, 0, queryIntervalMilliseconds) // 5 minutes interval
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -156,6 +159,7 @@ class FetchOutgoingMessagesService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "FetchOutgoingMessagesChannel"
-        private const val QUERY_INTERVAL_MILLISECONDS = 1 * 60 * 1000L // 5 minutes
+        private const val DEFAULT_INTERVAL = 300000L // 5 minutes
+
     }
 }

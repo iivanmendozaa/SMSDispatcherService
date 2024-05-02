@@ -14,6 +14,7 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.example.smsdispatcherservice.services.FetchOutgoingMessagesService
+import com.example.smsdispatcherservice.utilities.ConfigReader
 
 class MainActivity : ComponentActivity() {
 
@@ -43,8 +44,13 @@ class MainActivity : ComponentActivity() {
             ActivityCompat.requestPermissions(this,Array(1){ Manifest.permission.SEND_SMS},101)
         }
         else{
-            val serviceIntent = Intent(this, FetchOutgoingMessagesService()::class.java)
-            startService(serviceIntent)
+            val configReader = ConfigReader(this)
+            val QUERY_INTERVAL_MILLISECONDS_STR = configReader.getConfigParameter("QUERY_INTERVAL_MILLISECONDS")
+            val QUERY_INTERVAL_MILLISECONDS = QUERY_INTERVAL_MILLISECONDS_STR?.toLongOrNull() ?: 300000L // Default value of 5 minutes in milliseconds
+
+            val serviceIntent = Intent(this, FetchOutgoingMessagesService::class.java)
+            serviceIntent.putExtra("QUERY_INTERVAL_MILLISECONDS", QUERY_INTERVAL_MILLISECONDS)
+            this.startService(serviceIntent)
 
             showToast("FetchOutgoingMessagesService Service has been launched")
 
