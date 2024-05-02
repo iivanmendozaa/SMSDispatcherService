@@ -45,8 +45,10 @@ class MainActivity : ComponentActivity() {
         }
         else{
             val configReader = ConfigReader(this)
-            val QUERY_INTERVAL_MILLISECONDS_STR = configReader.getConfigParameter("QUERY_INTERVAL_MILLISECONDS")
-            val QUERY_INTERVAL_MILLISECONDS = QUERY_INTERVAL_MILLISECONDS_STR?.toLongOrNull() ?: 300000L // Default value of 5 minutes in milliseconds
+            val config = configReader.getConfig()
+
+            val QUERY_INTERVAL_MILLISECONDS_STR = config.getString("QUERY_INTERVAL_MILLISECONDS")
+            val QUERY_INTERVAL_MILLISECONDS = QUERY_INTERVAL_MILLISECONDS_STR.toLongOrNull() ?: 300000L // Default value of 5 minutes in milliseconds
 
             val serviceIntent = Intent(this, FetchOutgoingMessagesService::class.java)
             serviceIntent.putExtra("QUERY_INTERVAL_MILLISECONDS", QUERY_INTERVAL_MILLISECONDS)
@@ -62,7 +64,7 @@ class MainActivity : ComponentActivity() {
 
     private fun showToast(message: String) {
         Handler(Looper.getMainLooper()).post {
-            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
         }
     }
 }
