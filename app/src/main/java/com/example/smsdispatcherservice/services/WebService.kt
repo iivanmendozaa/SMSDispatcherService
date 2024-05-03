@@ -15,6 +15,7 @@ import com.example.smsdispatcherservice.MainActivity
 import com.example.smsdispatcherservice.R
 import com.example.smsdispatcherservice.infrastructure.MessageSender
 import com.example.smsdispatcherservice.utilities.ConfigReader
+import com.example.smsdispatcherservice.utilities.OutgoingSmsLog
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.newFixedLengthResponse
 import org.json.JSONException
@@ -30,6 +31,7 @@ class WebService : Service() {
     private lateinit var wakeLock: PowerManager.WakeLock
     private var configReader: ConfigReader? = null
     private var config: JSONObject? = null
+    private var outgoingSmsLog: OutgoingSmsLog? = null
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreate() {
@@ -49,6 +51,7 @@ class WebService : Service() {
         createNotificationChannel()
         val notification = createNotification()
         startForeground(NOTIFICATION_ID, notification.build())
+        outgoingSmsLog = OutgoingSmsLog(this.applicationContext)
 
         // Acquire the wake lock
         wakeLock.acquire()
@@ -138,12 +141,34 @@ class WebService : Service() {
             "/" -> serveHtmlPage("index.html") // New endpoint for serving HTML page
             "/home" -> serveHtmlPage("home.html") // New endpoint for serving HTML page
             "/settings" -> serveHtmlPage("settings.html") // New endpoint for serving HTML page
+            "/sentMessages" -> serveHtmlPage("sentMessages.html") // New endpoint for serving HTML page
             "/login.js" -> serveHtmlPage("login.js") // New endpoint for serving HTML page
             "/settings.js" -> serveHtmlPage("settings.js") // New endpoint for serving HTML page
             "/another-page" -> serveHtmlPage("another-page.html") // New endpoint for serving HTML page
+            "/getAllOutgoingMessages" -> getAllOutgoingMessagesController(session) // Register the new endpoint
             else -> newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "Not found")
         }
     }
+
+    private fun getAllOutgoingMessagesController(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
+        try {
+            // Retrieve all outgoing messages from the OutgoingSmsLog
+            val outgoingSmsLog = OutgoingSmsLog(this.applicationContext)
+            val allMessages = outgoingSmsLog.getAll()
+            val jsonResponse = allMessages.toString() ?: "{}" // Convert config to JSON string
+
+            return NanoHTTPD.newFixedLengthResponse(
+                NanoHTTPD.Response.Status.OK,
+                "application/json",
+                jsonResponse
+            )
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return newFixedLengthResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "Error retrieving outgoing messages")
+        }
+    }
+
     private fun serveHtmlPage(htmlFile: String): NanoHTTPD.Response {
         return try {
             val inputStream = assets.open(htmlFile)
@@ -175,6 +200,8 @@ class WebService : Service() {
             }
 
             messageSender.sendSMS(phoneNumber, message)
+            outgoingSmsLog?.addRegister(phoneNumber,message, "","API")
+
 
             return newFixedLengthResponse("Message Sent")
 

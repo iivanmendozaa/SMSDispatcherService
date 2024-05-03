@@ -19,6 +19,7 @@ import com.example.smsdispatcherservice.R
 import com.example.smsdispatcherservice.infrastructure.MSSQLDatabaseHandler
 import com.example.smsdispatcherservice.infrastructure.MessageSender
 import com.example.smsdispatcherservice.utilities.ConfigReader
+import com.example.smsdispatcherservice.utilities.OutgoingSmsLog
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -37,10 +38,12 @@ class FetchOutgoingMessagesService : Service() {
     private var androidDeviceId: String? = null
     private var configReader: ConfigReader? = null
     private var config: JSONObject? = null
+    private var outgoingSmsLog: OutgoingSmsLog? = null
     @SuppressLint("WakelockTimeout")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Acquire the wake lock
         wakeLock.acquire()
+        outgoingSmsLog = OutgoingSmsLog(this.applicationContext)
         loadSettings()
         println("Trying to launch with $queryIntervalMilliseconds and $androidDeviceId")
 
@@ -125,6 +128,7 @@ class FetchOutgoingMessagesService : Service() {
                         registers.forEach { message ->
                             smsSender.sendSMS(message.number, message.content)
                             databaseHandler.markMessageAsSent(message.id)
+                            outgoingSmsLog?.addRegister(message.number,message.content, "","MSSQL")
                         }
                             val registersCount = registers.size
                             sendNotification("Sync Executed", "$registersCount ${if (registersCount == 1) "was" else "were"} processed")

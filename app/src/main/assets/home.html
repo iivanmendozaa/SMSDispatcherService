@@ -54,6 +54,7 @@
     <h1>Web Administration Portal</h1>
     <p>This is the administration portal for the SMSDispatcherService.</p>
     <button onclick="goToSettings()">Settings</button>
+    <button onclick="goToSentMessages()">Sent Log Messages</button>
     <button onclick="checkHealth()">Check Server Health</button>
     <p id="healthStatus"></p>
 </div>
@@ -63,6 +64,10 @@
 
     function goToSettings() {
         window.location.href = "/settings";
+    }
+
+    function goToSentMessages() {
+        window.location.href = "/sentMessages";
     }
 
    function checkHealth() {
