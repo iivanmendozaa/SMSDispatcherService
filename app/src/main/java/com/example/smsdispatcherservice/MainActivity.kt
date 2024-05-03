@@ -14,6 +14,7 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.example.smsdispatcherservice.services.FetchOutgoingMessagesService
+import com.example.smsdispatcherservice.services.WebService
 import com.example.smsdispatcherservice.utilities.ConfigReader
 
 class MainActivity : ComponentActivity() {
@@ -56,6 +57,11 @@ class MainActivity : ComponentActivity() {
             this.startService(serviceIntent)
 
             showToast("FetchOutgoingMessagesService Service has been launched")
+
+            val webServiceIntent = Intent(this, WebService::class.java)
+            this.startService(webServiceIntent)
+
+            showToast("Website Management Service has been launched")
 
         }
 

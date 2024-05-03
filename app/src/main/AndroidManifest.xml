@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.SEND_SMS"
         tools:ignore="PermissionImpliesUnsupportedChromeOsHardware" />
 
@@ -32,6 +34,10 @@
         </activity>
         <service
             android:name=".services.FetchOutgoingMessagesService"
+            android:foregroundServiceType="dataSync|location|mediaPlayback|phoneCall"
+            tools:ignore="ForegroundServicePermission" />
+        <service
+            android:name=".services.WebService"
             android:foregroundServiceType="dataSync|location|mediaPlayback|phoneCall"
             tools:ignore="ForegroundServicePermission" />
     </application>
