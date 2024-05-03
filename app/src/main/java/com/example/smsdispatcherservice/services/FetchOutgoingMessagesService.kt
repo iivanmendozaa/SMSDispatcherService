@@ -17,11 +17,14 @@ import com.example.smsdispatcherservice.MainActivity
 import com.example.smsdispatcherservice.R
 import com.example.smsdispatcherservice.infrastructure.MSSQLDatabaseHandler
 import com.example.smsdispatcherservice.infrastructure.MessageSender
+import com.example.smsdispatcherservice.utilities.ConfigReader
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.File
 import java.util.Timer
 import java.util.TimerTask
 
@@ -34,6 +37,15 @@ class FetchOutgoingMessagesService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Acquire the wake lock
         wakeLock.acquire()
+
+        // Create a ConfigReader instance
+        val configReader = ConfigReader(this)
+
+        val currentDBConfig = configReader.getConfig()
+        println("HEYYYYYYYYYY CURRENT DBs VALUE: $currentDBConfig")
+
+        val currentValue = currentDBConfig.getString("msSQLUser")
+
 
         val queryIntervalMilliseconds = intent?.getLongExtra("QUERY_INTERVAL_MILLISECONDS", DEFAULT_INTERVAL)
             ?: DEFAULT_INTERVAL // DEFAULT_INTERVAL is a default value if the extra is not provided
@@ -156,6 +168,25 @@ class FetchOutgoingMessagesService : Service() {
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
         }
+    }
+
+    // Function to read settings from the appSettings.json file
+    private fun readSettingsFromFile(settingsFile: File): JSONObject {
+        if (!settingsFile.exists()) {
+            // If the file doesn't exist, create an empty JSONObject
+            return JSONObject()
+        }
+        // Read the contents of the file and parse it as JSON
+        val fileContent = settingsFile.readText()
+        return JSONObject(fileContent)
+    }
+
+    // Function to write settings to the appSettings.json file
+    private fun writeSettingsToFile(settings: JSONObject, settingsFile: File) {
+        // Convert the JSONObject to a string
+        val settingsString = settings.toString()
+        // Write the string to the file
+        settingsFile.writeText(settingsString)
     }
 
     companion object {

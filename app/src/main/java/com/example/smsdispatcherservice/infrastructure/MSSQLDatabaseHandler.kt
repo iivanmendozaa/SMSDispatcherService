@@ -17,14 +17,12 @@ class MSSQLDatabaseHandler(private val context: Context) {
     private val connectionUser = config.getString("msSQLUser")
     private val connectionPassword = config.getString("msSQLPassword")
 
-
-
     fun main() {
 
         var connection: Connection? = null
 
         try {
-
+            println("User: $connectionUser")
             connection = getConnection()
 
             println("Connection to the database established.")
