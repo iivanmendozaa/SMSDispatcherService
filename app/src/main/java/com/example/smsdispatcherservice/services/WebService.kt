@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.smsdispatcherservice.MainActivity
@@ -32,6 +33,7 @@ class WebService : Service() {
     private var configReader: ConfigReader? = null
     private var config: JSONObject? = null
     private var outgoingSmsLog: OutgoingSmsLog? = null
+    private var androidDeviceId: String? = null
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreate() {
@@ -52,6 +54,9 @@ class WebService : Service() {
         val notification = createNotification()
         startForeground(NOTIFICATION_ID, notification.build())
         outgoingSmsLog = OutgoingSmsLog(this.applicationContext)
+
+        androidDeviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
 
         // Acquire the wake lock
         wakeLock.acquire()
@@ -146,6 +151,7 @@ class WebService : Service() {
             "/settings.js" -> serveHtmlPage("settings.js") // New endpoint for serving HTML page
             "/another-page" -> serveHtmlPage("another-page.html") // New endpoint for serving HTML page
             "/getAllOutgoingMessages" -> getAllOutgoingMessagesController(session) // Register the new endpoint
+            "/deviceInfo" -> deviceInfoController(session) // Register the new endpoint
             else -> newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "Not found")
         }
     }
@@ -230,6 +236,31 @@ class WebService : Service() {
                 NanoHTTPD.Response.Status.INTERNAL_ERROR,
                 NanoHTTPD.MIME_PLAINTEXT,
                 "Error retrieving settings"
+            )
+        }
+    }
+
+    private fun deviceInfoController(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
+        try {
+            // Retrieve the Android device ID using appropriate methods
+            val androidDeviceId = androidDeviceId
+
+            // Construct a JSON object containing the device ID
+            val json = JSONObject().apply {
+                put("AndroidDeviceId", androidDeviceId)
+            }
+
+            return NanoHTTPD.newFixedLengthResponse(
+                NanoHTTPD.Response.Status.OK,
+                "application/json",
+                json.toString()
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return newFixedLengthResponse(
+                NanoHTTPD.Response.Status.INTERNAL_ERROR,
+                NanoHTTPD.MIME_PLAINTEXT,
+                "Error handling request"
             )
         }
     }

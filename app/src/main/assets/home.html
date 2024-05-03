@@ -52,7 +52,13 @@
 <body>
 <div class="container">
     <h1>Web Administration Portal</h1>
-    <p>This is the administration portal for the SMSDispatcherService.</p>
+    <h3>This is the administration portal for the SMSDispatcherService.</h3>
+    <p>Share this DeviceId with your Administrator to setup your device as Client</p>
+    <div style="text-align: center;">
+        <label for="AndroidDeviceId">Device ID: </label>
+        <input readonly="true" type="text" id="AndroidDeviceId" name="AndroidDeviceId">
+        <p/>
+    </div>
     <button onclick="goToSettings()">Settings</button>
     <button onclick="goToSentMessages()">Sent Log Messages</button>
     <button onclick="checkHealth()">Check Server Health</button>
@@ -115,7 +121,27 @@
             alert("Session expired. Please log in again.");
             window.location.href = "/"; // Redirect to login page
         }
+        getDeviceId()
     };
+
+
+    //
+    function getDeviceId(){
+
+    fetch("/deviceInfo", {
+        headers: {
+            "x-api-key": "YOUR_API_KEY_HERE" // Replace with your API key
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("AndroidDeviceId").value = data.AndroidDeviceId || "";
+    })
+    .catch(error => {
+        console.error("Error retrieving Device Id:", error);
+    });
+
+    }
 </script>
 </body>
 </html>
