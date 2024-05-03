@@ -11,12 +11,14 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.smsdispatcherservice.MainActivity
 import com.example.smsdispatcherservice.R
 import com.example.smsdispatcherservice.infrastructure.MSSQLDatabaseHandler
 import com.example.smsdispatcherservice.infrastructure.MessageSender
+import com.example.smsdispatcherservice.utilities.ConfigReader
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -31,16 +33,16 @@ class FetchOutgoingMessagesService : Service() {
 
     private val timer = Timer()
     private lateinit var wakeLock: PowerManager.WakeLock
-
+    private var queryIntervalMilliseconds: Long = 30000
+    private var androidDeviceId: String? = null
+    private var configReader: ConfigReader? = null
+    private var config: JSONObject? = null
     @SuppressLint("WakelockTimeout")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Acquire the wake lock
         wakeLock.acquire()
-
-        val queryIntervalMilliseconds = intent?.getLongExtra("QUERY_INTERVAL_MILLISECONDS", DEFAULT_INTERVAL)
-            ?: DEFAULT_INTERVAL // DEFAULT_INTERVAL is a default value if the extra is not provided
-
-        val androidDeviceId = intent?.getStringExtra("ANDROID_DEVICE_ID")
+        loadSettings()
+        println("Trying to launch with $queryIntervalMilliseconds and $androidDeviceId")
 
         createNotificationChannel()
         startForegroundService()
@@ -54,14 +56,30 @@ class FetchOutgoingMessagesService : Service() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "FetchOutgoingMessagesService::WakeLock")
     }
+
+    @SuppressLint("HardwareIds")
+    fun loadSettings(){
+
+        androidDeviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+        configReader = ConfigReader(this.applicationContext)
+        config = configReader!!.getConfig()
+        val QUERY_INTERVAL_MILLISECONDS_STR = config!!.getString("queryInterval")
+
+        queryIntervalMilliseconds = QUERY_INTERVAL_MILLISECONDS_STR.toLongOrNull() ?: 300000L // Default value of 5 minutes in milliseconds
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onDestroy() {
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
         super.onDestroy()
-        val restartIntent = Intent(applicationContext, FetchOutgoingMessagesService::class.java)
-        startService(restartIntent)
-        println("Instance launched.")
+
+       val restartIntent = Intent(applicationContext, FetchOutgoingMessagesService::class.java)
+       restartIntent.putExtra("ANDROID_DEVICE_ID", androidDeviceId)
+       startForegroundService(restartIntent)
+
+       println("Instance Relauched.")
     }
 
     private fun startForegroundService() {

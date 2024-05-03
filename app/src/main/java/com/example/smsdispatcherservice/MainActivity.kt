@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -20,7 +19,6 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.example.smsdispatcherservice.services.FetchOutgoingMessagesService
 import com.example.smsdispatcherservice.services.WebService
-import com.example.smsdispatcherservice.utilities.ConfigReader
 
 class MainActivity : ComponentActivity() {
 
@@ -29,10 +27,6 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-        val deviceId: String = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-        println("DEVICE ID: $deviceId")
 
 
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED){
@@ -51,21 +45,14 @@ class MainActivity : ComponentActivity() {
             ActivityCompat.requestPermissions(this,Array(1){ Manifest.permission.SEND_SMS},101)
         }
         else{
-            val configReader = ConfigReader(this)
-            val config = configReader.getConfig()
-
-            val QUERY_INTERVAL_MILLISECONDS_STR = config.getString("QUERY_INTERVAL_MILLISECONDS")
-            val QUERY_INTERVAL_MILLISECONDS = QUERY_INTERVAL_MILLISECONDS_STR.toLongOrNull() ?: 300000L // Default value of 5 minutes in milliseconds
 
             val serviceIntent = Intent(this, FetchOutgoingMessagesService::class.java)
-            serviceIntent.putExtra("QUERY_INTERVAL_MILLISECONDS", QUERY_INTERVAL_MILLISECONDS)
-            serviceIntent.putExtra("ANDROID_DEVICE_ID", deviceId)
             this.startService(serviceIntent)
 
             showToast("FetchOutgoingMessagesService Service has been launched")
-            val webServiceIntent = Intent(this, WebService::class.java)
 
-            this.startService(webServiceIntent)
+            val webServiceIntent = Intent(this, WebService::class.java)
+            this.startForegroundService(webServiceIntent)
 
             showToast("Website Management Service has been launched")
 

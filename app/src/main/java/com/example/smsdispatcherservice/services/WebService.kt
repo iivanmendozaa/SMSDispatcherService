@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.smsdispatcherservice.MainActivity
 import com.example.smsdispatcherservice.R
@@ -28,17 +29,22 @@ class WebService : Service() {
     private var messageSender: MessageSender = MessageSender()
     private lateinit var wakeLock: PowerManager.WakeLock
     private var configReader: ConfigReader? = null
+    private var config: JSONObject? = null
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreate() {
         super.onCreate()
 
         configReader = ConfigReader(this.applicationContext)
+        config = configReader!!.getConfig()
 
         //apiKey = loadApiKeyFromConfig()
-        //println(apiKey)
+
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WebService::WakeLock")
     }
+
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         createNotificationChannel()
         val notification = createNotification()
@@ -200,7 +206,6 @@ class WebService : Service() {
             )
         }
     }
-
 
     private fun settingsController(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
         try {

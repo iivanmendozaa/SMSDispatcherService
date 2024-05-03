@@ -33,7 +33,7 @@ window.onload = function() {
         document.getElementById("msSQLConnectionString").value = settings.msSQLConnectionString || "";
         document.getElementById("msSQLUser").value = settings.msSQLUser || "";
         document.getElementById("msSQLPassword").value = settings.msSQLPassword || "";
-        document.getElementById("queryInterval").value = settings.QUERY_INTERVAL_MILLISECONDS || "";
+        document.getElementById("queryInterval").value = settings.queryInterval || "";
     })
     .catch(error => {
         console.error("Error retrieving settings:", error);
