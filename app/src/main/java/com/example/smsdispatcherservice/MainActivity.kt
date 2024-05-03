@@ -9,6 +9,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.View
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
@@ -24,6 +29,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         val deviceId: String = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
         println("DEVICE ID: $deviceId")
@@ -57,13 +63,56 @@ class MainActivity : ComponentActivity() {
             this.startService(serviceIntent)
 
             showToast("FetchOutgoingMessagesService Service has been launched")
-
             val webServiceIntent = Intent(this, WebService::class.java)
+
             this.startService(webServiceIntent)
 
             showToast("Website Management Service has been launched")
 
+
         }
+
+        setContentView(R.layout.activity_main)
+
+        val mWebView = findViewById<View>(R.id.WebView) as WebView
+        mWebView.loadUrl("localhost:8080")
+
+        val webSetting = mWebView.settings
+        webSetting.javaScriptEnabled = true
+        webSetting.allowContentAccess = true
+        webSetting.domStorageEnabled = true
+        webSetting.allowFileAccessFromFileURLs = true
+
+        mWebView.webViewClient = WebViewClient()
+
+        val handler = Handler()
+        val refreshInterval = 30000 // Refresh interval in milliseconds (e.g., 30 seconds)
+
+        val refreshRunnable = object : Runnable {
+            override fun run() {
+                // Reload the webpage
+                mWebView.reload()
+                // Schedule the next refresh
+                handler.postDelayed(this, refreshInterval.toLong())
+            }
+        }
+
+        handler.postDelayed(refreshRunnable, refreshInterval.toLong())
+
+
+        mWebView.canGoBack()
+
+        mWebView.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK
+                && event.action == MotionEvent.ACTION_UP
+                && mWebView.canGoBack()){
+                mWebView.goBack()
+                return@OnKeyListener true
+
+            }
+            false
+
+        })
 
 
     }

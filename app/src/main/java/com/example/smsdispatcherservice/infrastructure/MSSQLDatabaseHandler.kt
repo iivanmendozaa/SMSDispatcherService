@@ -9,7 +9,7 @@ import java.sql.PreparedStatement
 import java.sql.SQLException
 
 
-class MSSQLDatabaseHandler(private val context: Context) {
+class MSSQLDatabaseHandler(context: Context) {
 
     private val configReader = ConfigReader(context = context)
     private val config = configReader.getConfig()

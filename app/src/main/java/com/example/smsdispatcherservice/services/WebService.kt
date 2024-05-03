@@ -13,6 +13,7 @@ import androidx.core.app.NotificationCompat
 import com.example.smsdispatcherservice.MainActivity
 import com.example.smsdispatcherservice.R
 import com.example.smsdispatcherservice.infrastructure.MessageSender
+import com.example.smsdispatcherservice.utilities.ConfigReader
 import fi.iki.elonen.NanoHTTPD
 import fi.iki.elonen.NanoHTTPD.newFixedLengthResponse
 import org.json.JSONException
@@ -22,12 +23,16 @@ import java.net.SocketException
 
 @Suppress("DEPRECATION")
 class WebService : Service() {
-    private var apiKey: String = ""
+    private var apiKey: String = "thisistheapikey"
     private var server: NanoHTTPD? = null
     private var messageSender: MessageSender = MessageSender()
     private lateinit var wakeLock: PowerManager.WakeLock
+    private var configReader: ConfigReader? = null
+
     override fun onCreate() {
         super.onCreate()
+
+        configReader = ConfigReader(this.applicationContext)
 
         //apiKey = loadApiKeyFromConfig()
         //println(apiKey)
@@ -43,7 +48,7 @@ class WebService : Service() {
         wakeLock.acquire()
 
         if (server == null) {
-            server = object : NanoHTTPD(9000) {
+            server = object : NanoHTTPD(8080) {
                 override fun serve(session: IHTTPSession): Response {
                     //APIKEY MIDDLEWARE
 
@@ -51,11 +56,9 @@ class WebService : Service() {
                     val response = when {
                         (session.method == Method.GET) -> handleGetRequest(session)
                         (session.method == Method.POST && session.uri == "/sendMessage") -> handlePostEndpoint1(session)
+                        (session.method == Method.POST && session.uri == "/modifySettings") -> settingsController(session)
                         else -> newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not found")
                     }
-
-                    // Send a notification every time a request is completed
-                    sendNotification("Request Completed", "SMS has been sent")
 
                     return response
                 }
@@ -124,8 +127,13 @@ class WebService : Service() {
     private fun handleGetRequest(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
         val uri = session.uri
         return when (uri) {
+            "/rawSettings" -> getSettingsController(session) // New route for retrieving settings
             "/health" -> handleHealthCheck()
             "/" -> serveHtmlPage("index.html") // New endpoint for serving HTML page
+            "/home" -> serveHtmlPage("home.html") // New endpoint for serving HTML page
+            "/settings" -> serveHtmlPage("settings.html") // New endpoint for serving HTML page
+            "/login.js" -> serveHtmlPage("login.js") // New endpoint for serving HTML page
+            "/settings.js" -> serveHtmlPage("settings.js") // New endpoint for serving HTML page
             "/another-page" -> serveHtmlPage("another-page.html") // New endpoint for serving HTML page
             else -> newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "Not found")
         }
@@ -140,7 +148,6 @@ class WebService : Service() {
             newFixedLengthResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "Error reading HTML file")
         }
     }
-
     private fun handlePostEndpoint1(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
         try {
             val phoneNumber = session.parms["phoneNumber"]
@@ -164,6 +171,62 @@ class WebService : Service() {
             messageSender.sendSMS(phoneNumber, message)
 
             return newFixedLengthResponse("Message Sent")
+
+        } catch (e: SocketException) {
+            e.printStackTrace()
+            return newFixedLengthResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "Socket closed")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return newFixedLengthResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, NanoHTTPD.MIME_PLAINTEXT, "Error handling request")
+        }
+    }
+
+    private fun getSettingsController(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
+        try {
+            val currentConfig = configReader?.getConfig()
+            val jsonResponse = currentConfig?.toString() ?: "{}" // Convert config to JSON string
+
+            return NanoHTTPD.newFixedLengthResponse(
+                NanoHTTPD.Response.Status.OK,
+                "application/json",
+                jsonResponse
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return NanoHTTPD.newFixedLengthResponse(
+                NanoHTTPD.Response.Status.INTERNAL_ERROR,
+                NanoHTTPD.MIME_PLAINTEXT,
+                "Error retrieving settings"
+            )
+        }
+    }
+
+
+    private fun settingsController(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
+        try {
+            val key = session.parms["key"]
+            val value = session.parms["value"]
+
+            if (key.isNullOrEmpty()) {
+                return newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.BAD_REQUEST,
+                    NanoHTTPD.MIME_PLAINTEXT,
+                    "Missing Key Parameter"
+                )
+            }
+            if (value.isNullOrEmpty()) {
+                return newFixedLengthResponse(
+                    NanoHTTPD.Response.Status.BAD_REQUEST,
+                    NanoHTTPD.MIME_PLAINTEXT,
+                    "Missing Value Parameter"
+                )
+            }
+
+            val currentConfig = configReader?.getConfig()
+            currentConfig?.put(key,value)
+            configReader?.updateConfig(currentConfig!!)
+
+            return newFixedLengthResponse("Settings Updated")
 
         } catch (e: SocketException) {
             e.printStackTrace()

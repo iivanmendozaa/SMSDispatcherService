@@ -83,7 +83,7 @@ class FetchOutgoingMessagesService : Service() {
             override fun run() {
                 performDatabaseQuery(deviceId)
             }
-        }, 0, queryIntervalMilliseconds) // 5 minutes interval
+        }, 0, queryIntervalMilliseconds)
     }
 
     @SuppressLint("SuspiciousIndentation")

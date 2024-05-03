@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAdmin SMSDispatcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Web Administration Portal</h1>
+    <p>This is the administration portal for the SMSDispatcherService.</p>
+    <button onclick="goToSettings()">Settings</button>
+    <button onclick="checkHealth()">Check Server Health</button>
+    <p id="healthStatus"></p>
+</div>
+
+<script>
+    // Your JavaScript code here
+
+    function goToSettings() {
+        window.location.href = "/settings";
+    }
+
+   function checkHealth() {
+            // Make an HTTP GET request to the "/health" endpoint
+            fetch("/health")
+                .then(response => response.text())
+                .then(data => {
+                    // Update the content of the "healthStatus" paragraph with the response
+                    document.getElementById("healthStatus").textContent = data;
+                })
+                .catch(error => {
+                    console.error('Error checking server health:', error);
+                    // Handle error
+                });
+        }
+
+
+    // Function to validate session cookie and check expiration
+    function validateSession() {
+        var cookies = document.cookie.split(";");
+
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.startsWith("session=")) {
+                var sessionValue = cookie.substring("session=".length);
+                var currentTime = new Date().getTime();
+                var sessionExpiration = parseInt(sessionValue);
+
+                // Check if session has expired
+                if (sessionExpiration < currentTime) {
+                    return false; // Session has expired
+                }
+
+                // Check if session is valid
+                return true;
+            }
+        }
+
+        return false; // Session cookie not found
+    }
+
+    // Check session validity on page load
+    window.onload = function() {
+        if (!validateSession()) {
+            alert("Session expired. Please log in again.");
+            window.location.href = "/"; // Redirect to login page
+        }
+    };
+</script>
+</body>
+</html>
