@@ -150,6 +150,7 @@ class WebService : Service() {
             "/login.js" -> serveHtmlPage("login.js") // New endpoint for serving HTML page
             "/settings.js" -> serveHtmlPage("settings.js") // New endpoint for serving HTML page
             "/another-page" -> serveHtmlPage("another-page.html") // New endpoint for serving HTML page
+            "/apidocs" -> serveHtmlPage("apidocs.html") // New endpoint for serving HTML page
             "/getAllOutgoingMessages" -> getAllOutgoingMessagesController(session) // Register the new endpoint
             "/deviceInfo" -> deviceInfoController(session) // Register the new endpoint
             else -> newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "Not found")

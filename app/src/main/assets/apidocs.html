@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .endpoint {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .method {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .endpoint-description {
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        .parameter {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<h1>API Documentation</h1>
+
+<div class="endpoint">
+    <div class="method">GET</div>
+    <div class="endpoint-description">Retrieve all sent messages.</div>
+    <div class="parameters">
+        <div class="parameter">Endpoint: <code>/getAllOutgoingMessages</code></div>
+        <div class="parameter">Headers: <code>api-key</code> - Your API key</div>
+    </div>
+</div>
+
+<div class="endpoint">
+    <div class="method">POST</div>
+    <div class="endpoint-description">Modify settings.</div>
+    <div class="parameters">
+        <div class="parameter">Endpoint: <code>/modifySettings?key={key}&value={value}</code></div>
+        <div class="parameter">Headers: <code>api-key</code> - Your API key</div>
+    </div>
+</div>
+
+<div class="endpoint">
+    <div class="method">GET</div>
+    <div class="endpoint-description">Check server health.</div>
+    <div class="parameters">
+        <div class="parameter">Endpoint: <code>/health</code></div>
+    </div>
+</div>
+
+<div class="endpoint">
+    <div class="method">GET</div>
+    <div class="endpoint-description">Retrieve device information.</div>
+    <div class="parameters">
+        <div class="parameter">Endpoint: <code>/deviceInfo</code></div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -56,11 +56,12 @@
     <p>Share this DeviceId with your Administrator to setup your device as Client</p>
     <div style="text-align: center;">
         <label for="AndroidDeviceId">Device ID: </label>
-        <input readonly="true" type="text" id="AndroidDeviceId" name="AndroidDeviceId">
+        <input readonly="readonly" type="text" id="AndroidDeviceId" name="AndroidDeviceId">
         <p/>
     </div>
     <button onclick="goToSettings()">Settings</button>
     <button onclick="goToSentMessages()">Sent Log Messages</button>
+    <button onclick="goToDocs()">API Docs</button>
     <button onclick="checkHealth()">Check Server Health</button>
     <p id="healthStatus"></p>
 </div>
@@ -74,6 +75,9 @@
 
     function goToSentMessages() {
         window.location.href = "/sentMessages";
+    }
+    function goToDocs() {
+        window.location.href = "/apidocs";
     }
 
    function checkHealth() {
