@@ -17,7 +17,6 @@ import com.example.smsdispatcherservice.MainActivity
 import com.example.smsdispatcherservice.R
 import com.example.smsdispatcherservice.infrastructure.MSSQLDatabaseHandler
 import com.example.smsdispatcherservice.infrastructure.MessageSender
-import com.example.smsdispatcherservice.utilities.ConfigReader
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -37,15 +36,6 @@ class FetchOutgoingMessagesService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Acquire the wake lock
         wakeLock.acquire()
-
-        // Create a ConfigReader instance
-        val configReader = ConfigReader(this)
-
-        val currentDBConfig = configReader.getConfig()
-        println("HEYYYYYYYYYY CURRENT DBs VALUE: $currentDBConfig")
-
-        val currentValue = currentDBConfig.getString("msSQLUser")
-
 
         val queryIntervalMilliseconds = intent?.getLongExtra("QUERY_INTERVAL_MILLISECONDS", DEFAULT_INTERVAL)
             ?: DEFAULT_INTERVAL // DEFAULT_INTERVAL is a default value if the extra is not provided

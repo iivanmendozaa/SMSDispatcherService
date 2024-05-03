@@ -12,7 +12,7 @@ import java.sql.SQLException
 class MSSQLDatabaseHandler(private val context: Context) {
 
     private val configReader = ConfigReader(context = context)
-    val config = configReader.getConfig()
+    private val config = configReader.getConfig()
     private val connectionString = config.getString("msSQLConnectionString")
     private val connectionUser = config.getString("msSQLUser")
     private val connectionPassword = config.getString("msSQLPassword")
@@ -22,7 +22,6 @@ class MSSQLDatabaseHandler(private val context: Context) {
         var connection: Connection? = null
 
         try {
-            println("User: $connectionUser")
             connection = getConnection()
 
             println("Connection to the database established.")
