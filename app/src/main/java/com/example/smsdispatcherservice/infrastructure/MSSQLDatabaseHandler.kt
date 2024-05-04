@@ -9,21 +9,19 @@ import java.sql.PreparedStatement
 import java.sql.SQLException
 
 
-class MSSQLDatabaseHandler(private val context: Context) {
+class MSSQLDatabaseHandler(context: Context) {
 
     private val configReader = ConfigReader(context = context)
-    private val connectionString = configReader.getConfigParameter("msSQLConnectionString")
-    private val connectionUser = configReader.getConfigParameter("msSQLUser")
-    private val connectionPassword = configReader.getConfigParameter("msSQLPassword")
-
-
+    private val config = configReader.getConfig()
+    private val connectionString = config.getString("msSQLConnectionString")
+    private val connectionUser = config.getString("msSQLUser")
+    private val connectionPassword = config.getString("msSQLPassword")
 
     fun main() {
 
         var connection: Connection? = null
 
         try {
-
             connection = getConnection()
 
             println("Connection to the database established.")

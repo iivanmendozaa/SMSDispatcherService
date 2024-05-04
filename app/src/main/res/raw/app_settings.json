@@ -1,0 +1,7 @@
+{
+  "mongoDbConnectionString": "oldString",
+  "msSQLConnectionString": "jdbc:jtds:sqlserver://192.168.1.76:1433/OnlineStoreBase",
+  "msSQLUser": "sa",
+  "msSQLPassword": "admin",
+  "QUERY_INTERVAL_MILLISECONDS": 10000
+}

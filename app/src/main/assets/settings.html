@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+input[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+#statusMessage {
+    margin-top: 20px;
+    text-align: center;
+    color: #333;
+}
+
+
+
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>Settings</h1>
+    <form id="settingsForm">
+        <label for="mongoDbConnectionString">MongoDB Connection String:</label>
+        <input type="text" id="mongoDbConnectionString" name="mongoDbConnectionString"><br><br>
+
+        <label for="msSQLConnectionString">MS SQL Connection String:</label>
+        <input type="text" id="msSQLConnectionString" name="msSQLConnectionString"><br><br>
+
+        <label for="msSQLUser">MS SQL User:</label>
+        <input type="text" id="msSQLUser" name="msSQLUser"><br><br>
+
+        <label for="msSQLPassword">MS SQL Password:</label>
+        <input type="password" id="msSQLPassword" name="msSQLPassword"><br><br>
+
+        <label for="queryInterval">Query Interval (milliseconds):</label>
+        <input type="number" id="queryInterval" name="queryInterval"><br><br>
+
+        <input type="submit" value="Save Settings">
+    </form>
+    <p id="statusMessage"></p>
+</div>
+
+<script src="settings.js"></script>
+</body>
+</html>
