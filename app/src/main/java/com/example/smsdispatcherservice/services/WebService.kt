@@ -87,6 +87,7 @@ class WebService : Service() {
         return START_STICKY
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onDestroy() {
         server?.stop()
         println("Web server stopped")
@@ -96,7 +97,7 @@ class WebService : Service() {
         }
         super.onDestroy()
         val restartIntent = Intent(applicationContext, WebService::class.java)
-        startService(restartIntent)
+        startForegroundService(restartIntent)
     }
 
     private fun loadApiKeyFromConfig(): String {
