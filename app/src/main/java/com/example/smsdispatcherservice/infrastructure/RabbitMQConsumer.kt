@@ -12,7 +12,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-class RabbitMQConsumer(private val queueName: String, private val username: String, private val password: String) {
+class RabbitMQConsumer(private val queueName: String, private val hostname: String, private val username: String, private val password: String) {
     private val factory = ConnectionFactory()
     private lateinit var connection: Connection
     private lateinit var channel: Channel
@@ -21,7 +21,7 @@ class RabbitMQConsumer(private val queueName: String, private val username: Stri
     fun connect(onSuccess: () -> Unit, onError: (Throwable) -> Unit) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                factory.host = "192.168.1.76" // RabbitMQ server host
+                factory.host = hostname
                 factory.username = username
                 factory.password = password
                 connection = factory.newConnection()
