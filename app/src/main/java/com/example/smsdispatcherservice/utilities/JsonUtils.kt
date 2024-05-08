@@ -14,7 +14,8 @@ class JsonUtils {
 
         // Deserialize a JSON string to an object of the specified type
         inline fun <reified T> fromJson(json: String): T {
-            return gson.fromJson(json, T::class.java)
+            val typeToken = object : TypeToken<T>() {}.type
+            return gson.fromJson(json, typeToken)
         }
 
         // Deserialize a JSON string to an object of the specified generic type

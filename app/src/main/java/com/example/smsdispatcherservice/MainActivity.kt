@@ -22,9 +22,7 @@ import com.example.smsdispatcherservice.infrastructure.RabbitMQManager
 import com.example.smsdispatcherservice.services.FetchOutgoingMessagesService
 import com.example.smsdispatcherservice.services.WebService
 import com.example.smsdispatcherservice.utilities.ConfigReader
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 
 class MainActivity : ComponentActivity() {
@@ -139,8 +137,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun rabbitInitializer(rabbitManager: RabbitMQManager, exchange: String, queue: String){
-        CoroutineScope(Dispatchers.IO).launch {
-
+        runBlocking {
             try {
                 rabbitManager.declareExchange(exchange,"direct")
                 rabbitManager.addBinding(exchange,queue,queue)
@@ -148,8 +145,6 @@ class MainActivity : ComponentActivity() {
             catch (e: Exception) {
                 println("Error Intializing RabbitMQ Connection: ${e.message}")
             }
-
-
         }
     }
 }

@@ -17,7 +17,7 @@ class MSSQLDatabaseHandler(context: Context) {
     private val connectionUser = config.getString("msSQLUser")
     private val connectionPassword = config.getString("msSQLPassword")
 
-    fun main() {
+    fun connect() {
 
         var connection: Connection? = null
 
