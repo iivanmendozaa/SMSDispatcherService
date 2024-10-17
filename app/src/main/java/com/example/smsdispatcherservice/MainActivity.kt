@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -17,11 +18,18 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import com.example.smsdispatcherservice.infrastructure.RabbitMQManager
 import com.example.smsdispatcherservice.services.FetchOutgoingMessagesService
 import com.example.smsdispatcherservice.services.WebService
+import com.example.smsdispatcherservice.utilities.ConfigReader
+import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
 
 class MainActivity : ComponentActivity() {
 
+    private var configReader: ConfigReader? = null
+    private var rabbitManager: RabbitMQManager? = null
+    private var appConfig: JSONObject? = null
 
     @SuppressLint("HardwareIds")
     @RequiresApi(Build.VERSION_CODES.P)
@@ -45,6 +53,23 @@ class MainActivity : ComponentActivity() {
             ActivityCompat.requestPermissions(this,Array(1){ Manifest.permission.SEND_SMS},101)
         }
         else{
+                configReader = ConfigReader(this.applicationContext)
+                appConfig = configReader!!.getConfig()
+                val androidDeviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
+                configReader!!.updateConfig(appConfig!!)
+                rabbitManager = RabbitMQManager(
+                    appConfig!!.getString("rabbitHost"),
+                    appConfig!!.getString("rabbitUser"),
+                    appConfig!!.getString("rabbitPassword")
+                )
+
+                rabbitInitializer(
+                    rabbitManager!!,
+                    "OutgoingMessages_$androidDeviceId",
+                    "OutgoingMessages_$androidDeviceId"
+                )
+
 
             val serviceIntent = Intent(this, FetchOutgoingMessagesService::class.java)
             this.startService(serviceIntent)
@@ -53,6 +78,7 @@ class MainActivity : ComponentActivity() {
 
             val webServiceIntent = Intent(this, WebService::class.java)
             this.startForegroundService(webServiceIntent)
+
 
             showToast("Website Management Service has been launched")
 
@@ -107,6 +133,18 @@ class MainActivity : ComponentActivity() {
     private fun showToast(message: String) {
         Handler(Looper.getMainLooper()).post {
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun rabbitInitializer(rabbitManager: RabbitMQManager, exchange: String, queue: String){
+        runBlocking {
+            try {
+                rabbitManager.declareExchange(exchange,"direct")
+                rabbitManager.addBinding(exchange,queue,queue)
+            }
+            catch (e: Exception) {
+                println("Error Intializing RabbitMQ Connection: ${e.message}")
+            }
         }
     }
 }

@@ -34,6 +34,10 @@ window.onload = function() {
         document.getElementById("msSQLUser").value = settings.msSQLUser || "";
         document.getElementById("msSQLPassword").value = settings.msSQLPassword || "";
         document.getElementById("queryInterval").value = settings.queryInterval || "";
+
+        document.getElementById("rabbitHost").value = settings.rabbitHost || "";
+        document.getElementById("rabbitUser").value = settings.rabbitUser || "";
+        document.getElementById("rabbitPassword").value = settings.rabbitPassword || "";
     })
     .catch(error => {
         console.error("Error retrieving settings:", error);

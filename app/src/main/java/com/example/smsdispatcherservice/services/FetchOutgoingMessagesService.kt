@@ -193,14 +193,6 @@ class FetchOutgoingMessagesService : Service() {
         return JSONObject(fileContent)
     }
 
-    // Function to write settings to the appSettings.json file
-    private fun writeSettingsToFile(settings: JSONObject, settingsFile: File) {
-        // Convert the JSONObject to a string
-        val settingsString = settings.toString()
-        // Write the string to the file
-        settingsFile.writeText(settingsString)
-    }
-
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "FetchOutgoingMessagesChannel"

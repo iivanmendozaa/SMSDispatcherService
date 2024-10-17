@@ -81,7 +81,8 @@ input[type="submit"]:hover {
     <form id="settingsForm">
         <label for="mongoDbConnectionString">MongoDB Connection String:</label>
         <input type="text" id="mongoDbConnectionString" name="mongoDbConnectionString"><br><br>
-
+        <hr class="dashed">
+        <p></p>
         <label for="msSQLConnectionString">MS SQL Connection String:</label>
         <input type="text" id="msSQLConnectionString" name="msSQLConnectionString"><br><br>
 
@@ -93,6 +94,18 @@ input[type="submit"]:hover {
 
         <label for="queryInterval">Query Interval (milliseconds):</label>
         <input type="number" id="queryInterval" name="queryInterval"><br><br>
+
+        <hr class="dashed">
+        <p></p>
+        <label for="rabbitHost">RabbitMQ Host:</label>
+        <input type="text" id="rabbitHost" name="rabbitHost"><br><br>
+
+        <label for="rabbitUser">RabbitMQ User:</label>
+        <input type="text" id="rabbitUser" name="rabbitUser"><br><br>
+
+        <label for="rabbitPassword">RabbitMQ Password:</label>
+        <input type="password" id="rabbitPassword" name="rabbitPassword"><br><br>
+
 
         <input type="submit" value="Save Settings">
     </form>
