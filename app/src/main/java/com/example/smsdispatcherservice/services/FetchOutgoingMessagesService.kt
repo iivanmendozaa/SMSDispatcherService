@@ -16,14 +16,20 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.smsdispatcherservice.MainActivity
 import com.example.smsdispatcherservice.R
+import com.example.smsdispatcherservice.domain.Message
 import com.example.smsdispatcherservice.infrastructure.MSSQLDatabaseHandler
 import com.example.smsdispatcherservice.infrastructure.MessageSender
+import com.example.smsdispatcherservice.infrastructure.RabbitMQConsumer
 import com.example.smsdispatcherservice.utilities.ConfigReader
+import com.example.smsdispatcherservice.utilities.JsonUtils
 import com.example.smsdispatcherservice.utilities.OutgoingSmsLog
+import com.google.gson.JsonParseException
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
@@ -39,6 +45,7 @@ class FetchOutgoingMessagesService : Service() {
     private var configReader: ConfigReader? = null
     private var config: JSONObject? = null
     private var outgoingSmsLog: OutgoingSmsLog? = null
+
     @SuppressLint("WakelockTimeout")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Acquire the wake lock
@@ -50,6 +57,7 @@ class FetchOutgoingMessagesService : Service() {
         createNotificationChannel()
         startForegroundService()
         scheduleDatabaseQueryTask(queryIntervalMilliseconds, androidDeviceId!!)
+      //  performDRabbitMQConsume()
 
 
         return START_STICKY
@@ -107,7 +115,6 @@ class FetchOutgoingMessagesService : Service() {
         }, 0, queryIntervalMilliseconds)
     }
 
-    @SuppressLint("SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     @OptIn(DelicateCoroutinesApi::class)
     private fun performDatabaseQuery(deviceId: String) {
@@ -121,7 +128,7 @@ class FetchOutgoingMessagesService : Service() {
                     val smsSender = MessageSender()
                         withContext(Dispatchers.IO) {
                         val databaseHandler = MSSQLDatabaseHandler(applicationContext)
-                        databaseHandler.main()
+                        databaseHandler.connect()
 
                         val registers = databaseHandler.retrieveMessagesForAndroidDevice(deviceId)
 
@@ -143,6 +150,69 @@ class FetchOutgoingMessagesService : Service() {
                 // Handle exceptions here
             }
         }
+    }
+
+    private fun performDRabbitMQConsume() {
+
+            try {
+
+                sendNotification("Hearth Beat", "Keeping Alive")
+                println("Im Alive")
+
+                try {
+                    val consumer = RabbitMQConsumer("OutgoingMessages_$androidDeviceId",config!!.getString("rabbitHost"),config!!.getString("rabbitUser"), config!!.getString("rabbitPassword"))
+
+                    runBlocking {
+                        val result  = consumer.connect()
+                        println("CONNECTED TO RABBIT: $result")
+
+                    }
+                    runBlocking {
+                        try {
+
+                            val smsSender = MessageSender()
+                                consumer.consume { message ->
+                                println("Received message: $message")
+
+                                val messageFromRabbit: Message = JsonUtils.fromJson(message)
+
+                                    if (messageFromRabbit != null) {
+                                        println("Received message Id: ${messageFromRabbit.id}")
+                                        println("Received message Number: ${messageFromRabbit.number}")
+                                        println("Received message Content: ${messageFromRabbit.content}")
+
+                                        smsSender.sendSMS(messageFromRabbit.number, messageFromRabbit.content)
+                                        outgoingSmsLog?.addRegister(messageFromRabbit.number,messageFromRabbit.content, "","RabbitMQ")
+                                        sendNotification("Sync Executed", "Rabbit was processed")
+                                    } else {
+                                        println("Miss Formed Message Received")
+                                    }
+
+
+
+                                }
+                        } catch (e: Exception) {
+                            println("Error consuming messages: ${e.message}")
+                            // Handle the error here
+                        } catch (e: JsonSyntaxException) {
+                            println("Error parsing JSON: ${e.message}")
+                        } catch (e: JsonParseException) {
+                            println("Error parsing JSON: ${e.message}")
+                        } catch (e: Exception) {
+                            println("Unexpected error: ${e.message}")
+                        }
+
+                    }
+
+                } catch (e: Exception) {
+                    // Handle exceptions here
+                }
+
+
+            } catch (e: Exception) {
+                // Handle exceptions here
+            }
+
     }
 
     override fun onBind(intent: Intent?): IBinder? {

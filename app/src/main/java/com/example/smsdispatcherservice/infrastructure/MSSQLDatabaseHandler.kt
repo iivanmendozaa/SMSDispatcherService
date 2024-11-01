@@ -40,7 +40,7 @@ class MSSQLDatabaseHandler(context: Context) {
 
         try {
             connection = getConnection()
-            val query = "SELECT * FROM OutgoingMessages WHERE AndroidDeviceId = ? AND Sent = 0"
+            val query = "SELECT * FROM auth.OutgoingMessages WHERE AndroidDeviceId = ? AND Sent = 0"
             preparedStatement = connection!!.prepareStatement(query)
             preparedStatement.setString(1, androidDeviceId)
             val resultSet = preparedStatement.executeQuery()
@@ -67,7 +67,7 @@ class MSSQLDatabaseHandler(context: Context) {
 
         try {
             connection = getConnection()
-            val query = "UPDATE OutgoingMessages SET Sent = 1 WHERE Id = ?"
+            val query = "UPDATE auth.OutgoingMessages SET Sent = 1 WHERE Id = ?"
             preparedStatement = connection!!.prepareStatement(query)
             preparedStatement.setInt(1, messageId)
             preparedStatement.executeUpdate()

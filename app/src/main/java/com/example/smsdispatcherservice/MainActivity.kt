@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
 
         val mWebView = findViewById<View>(R.id.WebView) as WebView
-        mWebView.loadUrl("localhost:8080")
+        mWebView.loadUrl("https://red-parts.react.themeforest.scompiler.ru/themes/red")
 
         val webSetting = mWebView.settings
         webSetting.javaScriptEnabled = true
